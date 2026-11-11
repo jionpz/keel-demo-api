@@ -16,6 +16,10 @@ npm test         # Node 24 内置 node:test
 
 端口可用 `PORT` 覆盖，监听地址可用 `HOST` 覆盖。
 
+HTTP 集成测试默认在独立临时目录内通过 Unix socket 发送真实 HTTP 请求，
+可在禁止 TCP 监听的执行沙箱中运行，不需要额外依赖。`TEST_TRANSPORT=tcp npm test`
+使用临时 loopback TCP 端口运行同一组断言；CI 同时验证两种传输方式。
+
 ## 当前 API
 
 ```bash
