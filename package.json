@@ -1,0 +1,14 @@
+{
+  "name": "keel-demo-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A tiny bookmarks API used to exercise Keel's backend task loop.",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}
