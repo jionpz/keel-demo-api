@@ -95,6 +95,37 @@ describe('HTTP API', () => {
     assert.equal(body.items.length, 1)
   })
 
+  it('GET /api/tags 聚合标签计数，删除后计数同步下降', async () => {
+    const created = await fetch(`${baseUrl}/api/bookmarks`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        title: 'tags',
+        url: 'https://example.com/tags',
+        tags: ['alpha', 'demo'],
+      }),
+    })
+    assert.equal(created.status, 201)
+    const bookmark = await created.json()
+
+    const aggregated = await fetch(`${baseUrl}/api/tags`)
+    assert.equal(aggregated.status, 200)
+    assert.deepEqual(await aggregated.json(), {
+      items: [
+        { tag: 'demo', count: 2 },
+        { tag: 'alpha', count: 1 },
+      ],
+      totalTags: 2,
+    })
+
+    const removed = await fetch(`${baseUrl}/api/bookmarks/${bookmark.id}`, { method: 'DELETE' })
+    assert.equal(removed.status, 204)
+
+    const after = await fetch(`${baseUrl}/api/tags`)
+    assert.equal(after.status, 200)
+    assert.deepEqual(await after.json(), { items: [{ tag: 'demo', count: 1 }], totalTags: 1 })
+  })
+
   it('创建、读取、更新、删除完整链路', async () => {
     const created = await fetch(`${baseUrl}/api/bookmarks`, {
       method: 'POST',

@@ -141,6 +141,16 @@ export function createBookmarkStore({
         .map(clone)
     },
 
+    tagCounts() {
+      const counts = new Map()
+      for (const bookmark of items.values()) {
+        for (const tag of bookmark.tags) counts.set(tag, (counts.get(tag) ?? 0) + 1)
+      }
+      return [...counts.entries()]
+        .map(([tag, count]) => ({ tag, count }))
+        .sort((a, b) => b.count - a.count || (a.tag < b.tag ? -1 : a.tag > b.tag ? 1 : 0))
+    },
+
     get(bookmarkId) {
       const bookmark = items.get(bookmarkId)
       return bookmark === undefined ? null : clone(bookmark)

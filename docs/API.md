@@ -42,6 +42,26 @@ Base URL：`http://127.0.0.1:3001`
 
 当前返回全部书签。过滤、分页与搜索由后续 `keel` issue 扩展。
 
+### `GET /api/tags`
+
+返回当前所有实际存在的书签的标签计数，只读聚合：
+
+```json
+{
+  "items": [
+    { "tag": "workflow", "count": 2 },
+    { "tag": "ai", "count": 1 },
+    { "tag": "node", "count": 1 },
+    { "tag": "testing", "count": 1 }
+  ],
+  "totalTags": 4
+}
+```
+
+排序规则：先按 `count` 降序，同计数按 `tag` 升序（逐码点比较）。
+`totalTags` 是不同标签的数量。空 store 返回 `{ "items": [], "totalTags": 0 }`。
+不提供按标签删除或重命名。
+
 ### `POST /api/bookmarks`
 
 请求体至少包含 `title` 与 `url`。成功返回 `201`、`Location` 头和完整 Bookmark。

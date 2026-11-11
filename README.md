@@ -33,6 +33,7 @@ curl -X PATCH http://127.0.0.1:3001/api/bookmarks/<id> \
   -H 'content-type: application/json' \
   -d '{"status":"reading"}'
 curl -X DELETE http://127.0.0.1:3001/api/bookmarks/<id>
+curl http://127.0.0.1:3001/api/tags
 ```
 
 完整字段、状态码与错误格式见 [`docs/API.md`](./docs/API.md)。
