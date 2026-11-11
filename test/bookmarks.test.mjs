@@ -117,6 +117,20 @@ describe('bookmark store', () => {
     ])
   })
 
+  it('tagCounts 同计数按码点升序，astral 字符不因 UTF-16 码元序错位', () => {
+    const s = store()
+    const created = s.create({
+      title: 'astral',
+      url: 'https://example.com/astral',
+      tags: ['😀', '\uFFFF'],
+    })
+    assert.deepEqual(created.tags, ['\uFFFF', '😀'])
+    assert.deepEqual(s.tagCounts(), [
+      { tag: '\uFFFF', count: 1 },
+      { tag: '😀', count: 1 },
+    ])
+  })
+
   it('tagCounts 在空 store 返回空数组，删除后计数下降', () => {
     const s = store()
     assert.deepEqual(s.tagCounts(), [])
