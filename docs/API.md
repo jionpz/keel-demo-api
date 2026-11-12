@@ -24,7 +24,7 @@ Base URL：`http://127.0.0.1:3001`
 - `title`：1–200 字符，必填。
 - `url`：合法 `http` / `https` URL，最长 2048 字符，必填。
 - `status`：`unread` | `reading` | `done`，创建时缺省 `unread`。
-- `tags`：0–20 个，每个 1–40 字符；去重并按小写保存。
+- `tags`：0–20 个，每个 1–40 字符；去重、按小写保存，并按 Unicode 码点升序排序。
 - `notes`：可选，最长 2000 字符。
 - `id`、`createdAt`、`updatedAt` 由服务端生成，不接受客户端写入。
 
@@ -41,6 +41,27 @@ Base URL：`http://127.0.0.1:3001`
 ### `GET /api/bookmarks`
 
 当前返回全部书签。过滤、分页与搜索由后续 `keel` issue 扩展。
+
+### `GET /api/tags`
+
+返回当前所有实际存在的书签的标签计数，只读聚合：
+
+```json
+{
+  "items": [
+    { "tag": "workflow", "count": 2 },
+    { "tag": "ai", "count": 1 },
+    { "tag": "node", "count": 1 },
+    { "tag": "testing", "count": 1 }
+  ],
+  "totalTags": 4
+}
+```
+
+排序规则：先按 `count` 降序，同计数按 `tag` 升序（Unicode 码点顺序，逐码点比较，与 locale 无关）。
+因此 `"\uFFFF"`（码点 65535）排在 `"😀"`（码点 128512）之前。
+`totalTags` 是不同标签的数量。空 store 返回 `{ "items": [], "totalTags": 0 }`。
+不提供按标签删除或重命名。
 
 ### `POST /api/bookmarks`
 

@@ -47,6 +47,21 @@ function status(value) {
   return value
 }
 
+/**
+ * 按 Unicode 码点比较，而不是 JavaScript 默认的 UTF-16 码元序：
+ * 后者会把 astral 字符（如 emoji）排到 U+E000–U+FFFF 之前，与文档契约不符。
+ */
+function compareTags(a, b) {
+  const left = Array.from(a)
+  const right = Array.from(b)
+  const length = Math.min(left.length, right.length)
+  for (let index = 0; index < length; index += 1) {
+    const diff = left[index].codePointAt(0) - right[index].codePointAt(0)
+    if (diff !== 0) return diff
+  }
+  return left.length - right.length
+}
+
 function tags(value) {
   if (value === undefined) return []
   if (!Array.isArray(value)) throw new ValidationError('tags', 'tags 必须是数组')
@@ -56,7 +71,7 @@ function tags(value) {
     const tag = text(raw, 'tags', { min: 1, max: 40 }).toLowerCase()
     unique.add(tag)
   }
-  return [...unique].sort()
+  return [...unique].sort(compareTags)
 }
 
 function notes(value) {
@@ -139,6 +154,16 @@ export function createBookmarkStore({
       return [...items.values()]
         .sort((a, b) => b.createdAt.localeCompare(a.createdAt) || a.id.localeCompare(b.id))
         .map(clone)
+    },
+
+    tagCounts() {
+      const counts = new Map()
+      for (const bookmark of items.values()) {
+        for (const tag of bookmark.tags) counts.set(tag, (counts.get(tag) ?? 0) + 1)
+      }
+      return [...counts.entries()]
+        .map(([tag, count]) => ({ tag, count }))
+        .sort((a, b) => b.count - a.count || compareTags(a.tag, b.tag))
     },
 
     get(bookmarkId) {

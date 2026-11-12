@@ -104,6 +104,49 @@ describe('bookmark store', () => {
     assert.deepEqual(s.get(second.id).tags, [])
   })
 
+  it('tagCounts 只统计现有标签，按 count 降序、tag 升序', () => {
+    const s = store()
+    s.create({ title: 'a', url: 'https://example.com/a', tags: ['Workflow', 'ai'] })
+    s.create({ title: 'b', url: 'https://example.com/b', tags: ['workflow'] })
+    s.create({ title: 'c', url: 'https://example.com/c', tags: ['node', 'testing', 'ai'] })
+    assert.deepEqual(s.tagCounts(), [
+      { tag: 'ai', count: 2 },
+      { tag: 'workflow', count: 2 },
+      { tag: 'node', count: 1 },
+      { tag: 'testing', count: 1 },
+    ])
+  })
+
+  it('tagCounts 同计数按码点升序，astral 字符不因 UTF-16 码元序错位', () => {
+    const s = store()
+    const created = s.create({
+      title: 'astral',
+      url: 'https://example.com/astral',
+      tags: ['😀', '\uFFFF'],
+    })
+    assert.deepEqual(created.tags, ['\uFFFF', '😀'])
+    assert.deepEqual(s.tagCounts(), [
+      { tag: '\uFFFF', count: 1 },
+      { tag: '😀', count: 1 },
+    ])
+  })
+
+  it('tagCounts 在空 store 返回空数组，删除后计数下降', () => {
+    const s = store()
+    assert.deepEqual(s.tagCounts(), [])
+    const created = s.create({
+      title: 'x',
+      url: 'https://example.com',
+      tags: ['ai', 'workflow'],
+    })
+    assert.deepEqual(s.tagCounts(), [
+      { tag: 'ai', count: 1 },
+      { tag: 'workflow', count: 1 },
+    ])
+    s.remove(created.id)
+    assert.deepEqual(s.tagCounts(), [])
+  })
+
   it('seed 走与 create 相同的校验', () => {
     const seeded = createBookmarkStore({
       now: () => NOW,

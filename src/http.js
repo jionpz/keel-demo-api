@@ -91,6 +91,7 @@ export function createRequestHandler({ store, version = '0.1.0', now = () => Dat
             'GET /api/bookmarks/:id',
             'PATCH /api/bookmarks/:id',
             'DELETE /api/bookmarks/:id',
+            'GET /api/tags',
           ],
         })
         return
@@ -98,6 +99,12 @@ export function createRequestHandler({ store, version = '0.1.0', now = () => Dat
 
       if (method === 'GET' && pathname === '/api/bookmarks') {
         sendJson(res, 200, { items: store.list(), total: store.count() })
+        return
+      }
+
+      if (method === 'GET' && pathname === '/api/tags') {
+        const items = store.tagCounts()
+        sendJson(res, 200, { items, totalTags: items.length })
         return
       }
 
